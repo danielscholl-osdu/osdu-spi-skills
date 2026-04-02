@@ -1,4 +1,9 @@
-# Identity & Voice
+# OSDU SPI Skills
+
+Shared instructions for all AI agents (Copilot, Claude Code, etc.) working in this
+repository. Organized as: how to behave, how to route work, what to know about the project.
+
+---
 
 ## Core Principles
 
@@ -60,135 +65,160 @@ Direct, warm, professional. No fluff. Get to the point fast.
 
 ---
 
-# Work Routing
-
-How to decide what runs in the default context vs. a specialist agent.
-
-## Model
+## Delegation Model
 
 The default context **observes, plans, and ships**. Specialist agents **operate** in their domain.
 
 | Context | Boundary | What happens here |
 |---------|----------|-------------------|
 | **Default** | Observe / Plan / Ship | Briefings, goal tracking, strategy, decisions, cross-project oversight, shipping changes |
-| **@cimpl** | Operate — infrastructure | Terraform, Helm, AKS, Kustomize, deployment scripts, debugging, verification |
-| **@osdu** | Operate — platform services | Clone repos, scan deps, run tests, remediate, build, review MRs, query live platform |
-
-## Routing Table
-
-| Signal | Route To | Examples |
-|--------|----------|----------|
-| Briefing, daily standup | Default | "gm", "good morning", "briefing" |
-| Goal tracking, priorities | Default | "What should I focus on?", "How are my goals?" |
-| Task management | Default | "What's due this week?", "What's overdue?" |
-| Writing, drafting comms | Default | "Draft an email to...", "Help me respond to..." |
-| Strategic thinking | Default | "Should I do X or Y?", "What are the tradeoffs?" |
-| Explore / think out loud | Default | "Just thinking out loud", "explore" |
-| Decision-like statements | Default (brain skill) | "Moving forward do X", "we decided on Y" |
-| "remember this", store a fact | Default (brain skill) | Use brain skill directly |
-| Learn/study external knowledge | Default (learn skill) | "learn about OSDU", "study the wiki" |
-| Environment setup, onboarding | Default (setup skill) | "setup", "check my environment" |
-| Ship / commit / push / MR | Default (send skill) | "send it", "ship it", "push my changes" |
-| Review an MR (code + pipeline) | Default (mr-review skill) | "review MR 845", "assess this MR", GitLab MR URL |
-| Contribute to someone's MR | Default (contribute skill) | "contribute to MR", "push this into their MR", "sub-MR" |
-| Vault reads, knowledge search | Default (brain skill) | "what did we decide about X" |
-| Environment health, cluster status | Default (health skill) | "report on my environments", "cluster health" |
-| "Command not found" errors | Default (setup skill) | Tool missing — run setup checks |
-| Create / manage CIMPL environments | **@cimpl** | "create a cimpl environment", "provision OSDU on Azure", "azd up" |
-| Terraform / IaC changes | **@cimpl** | "add a new Helm chart", "fix the terraform module" |
-| IaC debugging | **@cimpl** | "why did the deployment fail", "policy violation" |
-| IaC verification | **@cimpl** | "verify the infrastructure change" |
-| AKS / Kubernetes config | **@cimpl** | "add a readiness probe", "fix safeguards" |
-| Pipeline status (quick lookup) | Default (osdu-activity) | "What's failing?", "Pipeline status for partition" |
-| Open MRs (quick lookup) | Default (osdu-activity) | "Show open MRs for storage" |
-| Test reliability (quick lookup) | Default (osdu-quality) | "How reliable are partition tests?" |
-| Contribution stats (quick lookup) | Default (osdu-engagement) | "Who's contributing most?", "Review activity" |
-| Build execution | **@osdu** | "Build partition", "Run Maven verify" |
-| Test execution, failure analysis | **@osdu** | "Run tests on partition", "Why are tests failing?" |
-| Acceptance tests against live env | **@osdu** (acceptance-test) | "Run acceptance tests for partition", "Test storage against my environment" |
-| QA test runs, environments | **@osdu** (qa-runner) | "Run smoke tests", "Check environment health" |
-| QA failure analysis | **@osdu** (qa-analyzer) | "Analyze test failures", "Root cause of storage errors" |
-| QA environment comparison | **@osdu** (qa-comparator) | "Compare qa vs temp results" |
-| QA report generation | **@osdu** (qa-reporter) | "Generate QA report", "Create test dashboard" |
-| Dependency analysis, CVEs | **@osdu** | "Check deps for partition", "Any vulnerabilities?" |
-| FOSSA / NOTICE fixes | **@osdu** | "Fix FOSSA failure", "NOTICE file" |
-| Maintainer workflows (trusted branch) | **@osdu** | "Allow MR !320", "Sync trusted branch" |
-| Clone repos, workspace setup | Default (clone skill) | "Clone partition", "Setup workspace" |
-| Load test data, bootstrap instance | Default (osdu-data-load) | "Load reference data", "bootstrap with test data", "what datasets available" |
-| OSDU platform data, records, schemas | **@osdu** | "search for well records", "list schemas" |
-| Quick factual question | Answer directly | "What branch am I on?", "What repos are cloned?" |
-
-## Delegation
-
-The default context delegates to specialists. This is **one-way** — specialists do not
-invoke the default context or each other.
+| **@osdu** | Operate — platform services | Builds, test runs, dependency remediation, complex multi-step platform operations |
+| **@cimpl** | Operate — cimpl infrastructure | Terraform, Helm, AKS, Kustomize, deployment scripts, debugging, verification |
+| **@spi** | Operate — spi infrastructure | Azure PaaS Terraform, fork management, three-branch strategy |
 
 ```
-Default ──→ @cimpl   (infrastructure operations)
-       └──→ @osdu    (platform operations)
+Default ──→ @osdu   (platform operations)
+       ├──→ @cimpl  (cimpl infrastructure)
+       └──→ @spi    (spi infrastructure)
 ```
 
-**Simple OSDU queries** (MR lists, pipeline status, contribution stats): The default context
-can handle these directly using CLI tools — no need to spawn @osdu for a quick lookup.
+Delegation is one-way: default → specialist. Specialists do not invoke the default context
+or each other.
 
-**Complex operations** (test runs, builds, failure analysis, dependency remediation):
-Delegate to the appropriate specialist via the `task` tool.
+### Routing Rules
+
+1. **Quick facts — answer directly.** Don't route to an agent for "what branch am I on?"
+2. **Observe vs operate** is the key boundary. Understanding state, planning, or shipping → stay in default. Changing infrastructure or platform services → delegate.
+3. **When two specialists could handle it**, pick the one whose domain is the primary concern.
+4. **Ambiguous?** State the inferred route in one line before proceeding.
+
+---
 
 ## Skills
 
-### Shared Skills (available everywhere)
+30 skills organized by ownership:
 
-Skills in `skills/` are available to the default context and both specialists.
+### Shared (execute in current context — do NOT delegate)
 
-| Skill | Domain | Trigger |
-|-------|--------|---------|
-| brain | Obsidian vault reads/writes | Vault, knowledge, decisions, daily notes |
-| glab | GitLab CLI operations | MRs, pipelines, GitLab issues |
-| send | Ship changes (review, commit, push, MR) | "send it", "ship it" |
-| mr-review | MR code analysis + pipeline diagnostics | "review MR", "assess this MR", MR URL |
-| contribute | Push changes into someone else's MR | "contribute to MR", "sub-MR" |
-| learn | Knowledge acquisition | "learn about", "study the wiki" |
-| health | Environment health reporting | "cluster health", "environment status" |
-| briefing | Daily briefing generation | "gm", "briefing" |
-| consolidate | Vault hygiene | "consolidate", "clean up the vault" |
-| setup | Environment validation | "setup", "check my environment" |
-| osdu-activity | Open MRs, pipelines | "What's failing in CI?" |
-| osdu-engagement | Contributions, reviews | "Who's contributing most?" |
-| osdu-quality | Test reliability | "How reliable are partition tests?" |
-| osdu-data-load | Load datasets into OSDU instances | "load reference data", "bootstrap instance", "what datasets" |
+brain, briefing, learn, consolidate, glab, send, mr-review, contribute, clone, setup,
+osdu-activity, osdu-engagement, osdu-quality, osdu-data-load
 
-### Specialist Skills (loaded by owning agent only)
+### Specialist (loaded by owning agent)
 
 | Skill | Owner | Domain |
 |-------|-------|--------|
-| iac | @cimpl | Terraform, AVM, Helm, AKS safeguards, debugging, verification |
+| iac | @cimpl, @spi | Terraform, AVM, Helm, AKS safeguards, Azure PaaS |
+| health | @cimpl, @spi | Environment health, cluster and PaaS resource status |
+| forks | @spi | Three-branch fork lifecycle, upstream sync |
+| status | @spi | Cross-repo dashboard, open issues/PRs |
 | maven | @osdu | Java builds and dependency management |
 | dependencies | @osdu | Dependency analysis and risk scoring |
 | build-runner | @osdu | Build execution with structured output |
-| acceptance-test | @osdu | Java acceptance/integration tests against live cimpl environments |
+| acceptance-test | @osdu | Java acceptance/integration tests against live environments |
 | osdu-qa | @osdu | QA test execution, environments, and reporting |
-| qa-runner | @osdu (sub-agent) | Parallel test execution across environments |
-| qa-analyzer | @osdu (sub-agent) | Test failure root cause analysis |
-| qa-comparator | @osdu (sub-agent) | Cross-environment result comparison |
-| qa-reporter | @osdu (sub-agent) | QA report and dashboard generation |
 
-### Default-Only Skills
+### Default-Only
 
-| Skill | Domain |
-|-------|--------|
-| loop | In-session recurring tasks (Cron extension) |
-| clone | Clone OSDU repos to workspace |
-| dependency-scan | Full dependency analysis with risk scoring |
-| remediate | Apply dependency updates from scan report |
-| fossa | Fix FOSSA NOTICE file from failed pipeline |
-| maintainer | MR review/allow via trusted branch sync |
+loop, dependency-scan, remediate, fossa, maintainer
 
-## Rules
+---
 
-1. **Quick facts — answer directly.** Don't route to an agent for "what branch am I on?"
-2. **Observe vs operate** is the key boundary. If the task is about understanding state, planning, or shipping — stay in default. If it requires changing infrastructure or platform services — delegate.
-3. **When two specialists could handle it**, pick the one whose domain is the primary concern.
-4. **Ambiguous?** State the inferred route in one line before proceeding.
-5. **Skills are always available.** Any context can use shared skills in `skills/`.
-6. **Missing tools — delegate to setup.** If any skill's pre-flight check (`--version`) fails with "command not found", **stop the current skill** and switch to the `setup` skill to install missing dependencies. Do NOT attempt to install tools inline — the setup skill has the correct sources, install commands, and user approval flow. After setup completes, retry the original task.
-7. **Graceful degradation without brain vault.** If the brain vault (`$OSDU_BRAIN`) does not exist, skills should still work — just without persistence. Reports save to the current working directory instead of `$OSDU_BRAIN/04-reports/`. Briefings print to stdout instead of writing to `$OSDU_BRAIN/00-inbox/`. Never create the vault directory implicitly — that is the brain skill's job via `init brain`.
+## Directory Structure
+
+| Path | Purpose |
+|------|---------|
+| `agents/` | Agent definitions — specialist agents with scope, routing, sub-agent coordination |
+| `skills/` | Skill definitions — SKILL.md per folder, with optional scripts/, references/, tests/ |
+| `commands/` | Slash-command prompts — user-invokable entry points (clone, prime, qa, ship) |
+| `reference/` | Shared reference docs used across multiple skills |
+| `docs/` | Starlight documentation site (published via CI) |
+| `tests/` | Six-layer test framework (L0–L5) with evals, scripts, and unit tests |
+| `plugin.json` | Plugin manifest — declares agents, skills, commands, and MCP servers |
+| `AGENTS.md` | This file — shared instructions for all AI agents |
+| `CLAUDE.md` | Claude Code entry point (imports this file) |
+
+---
+
+## Build & Test
+
+```bash
+make test          # L0 + L1 + L2 + pytest — fast, no AI required
+make lint          # L1 structure validation only
+make unit          # L2 trigger eval dry-run
+make pytest        # Python unit tests only
+
+# Live tests (require AI CLI)
+make test-triggers CLI=copilot       # L3 trigger accuracy
+make test-triggers CLI=claude S=glab # L3 single skill
+make test-sessions CLI=claude S=brain # L4 multi-turn sessions
+make test-benchmark S=brain          # L5 value comparison
+make test-all                        # Full matrix (L0–L4, both CLIs)
+```
+
+Prerequisites: Python 3.11+, uv, tmux (for L4). Run `make doctor` to check.
+
+---
+
+## Platform
+
+- **OSDU GitLab:** https://community.opengroup.org/osdu/platform
+- **Services:** ~30 projects across system/, security-and-compliance/, data-flow/, domain/
+- **Cloud providers:** Azure, AWS, GCP, IBM, CIMPL (Venus)
+
+### OSDU Project Registry
+
+Base path: `osdu/platform`
+
+| Category | Services |
+|----------|----------|
+| system/ | partition, storage, indexer-service, indexer-queue, search-service, schema-service, file, notification, secret, dataset, register |
+| security-and-compliance/ | entitlements, legal |
+| data-flow/ | ingestion-workflow |
+| domain/ | wellbore-domain-services, well-delivery, seismic-store-service, unit-service, crs-catalog-service, crs-conversion-service, rafs-ddms-services, eds-dms |
+| consumption/ | geospatial |
+| devops/ | os-core-common |
+
+**Path resolution:** Always use full paths — `osdu/platform/system/partition`, never `osdu/partition`.
+
+---
+
+## Workspace Layout
+
+OSDU services are cloned into a shared workspace using either worktree (bare clone)
+or standard git clone:
+
+```
+$OSDU_WORKSPACE/
+  partition/              # OSDU service repo
+    .bare/                # bare clone marker
+    master/               # default worktree (read-only reference)
+    feature-xxx/          # feature worktree (active work)
+  storage/
+    .bare/
+    master/
+  cimpl-azure-provisioning/
+    .bare/
+    main/
+```
+
+### Key Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `OSDU_WORKSPACE` | Workspace root for cloned repos | Current working directory |
+| `OSDU_BRAIN` | Obsidian vault for persistent knowledge | `~/.osdu-brain` |
+| `GITLAB_TOKEN` | GitLab API access token | — |
+
+See `reference/environments.md` for full environment configuration including QA test
+targets and agent credentials.
+
+---
+
+## Conventions
+
+- **Conventional commits:** `feat(skills): add <name>`, `fix(agents): correct routing`
+- **CLI output:** Always `--output markdown` for osdu-activity, osdu-engagement, osdu-quality (never `--output tty`)
+- **Missing tools:** Delegate to `setup` skill — never install tools inline
+- **Vault optional:** Skills degrade gracefully without `$OSDU_BRAIN` — reports save to cwd, briefings print to stdout. Never create the vault directory implicitly.
+- **Skill descriptions:** Under 500 characters, always include "Not for:" exclusions
+- **Trigger evals:** Every skill needs 8+ positive and 5+ negative eval cases
