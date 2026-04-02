@@ -20,6 +20,7 @@ export default defineConfig({
 						{ label: 'Introduction', slug: 'getting-started/introduction' },
 						{ label: 'Installation', slug: 'getting-started/installation' },
 						{ label: 'First Session', slug: 'getting-started/first-session' },
+						{ label: 'Workspace Setup', slug: 'getting-started/workspace-setup' },
 					],
 				},
 				{
@@ -46,6 +47,7 @@ export default defineConfig({
 						{ label: 'Contributing', slug: 'development/contributing' },
 						{ label: 'Testing', slug: 'development/testing' },
 						{ label: 'Adding Skills', slug: 'development/adding-skills' },
+						{ label: 'Releases', slug: 'development/releases' },
 					],
 				},
 			],

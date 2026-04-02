@@ -1,14 +1,50 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
+    branches: [main]
+  push:
     branches: [main]
 
 jobs:
-  test:
+  # ---------------------------------------------------------------------------
+  # Detect what changed to skip unnecessary work
+  # ---------------------------------------------------------------------------
+  changes:
     runs-on: ubuntu-latest
+    outputs:
+      skills: ${{ steps.filter.outputs.skills }}
+      docs: ${{ steps.filter.outputs.docs }}
+      tests: ${{ steps.filter.outputs.tests }}
+      workflows: ${{ steps.filter.outputs.workflows }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            skills:
+              - 'skills/**'
+              - 'agents/**'
+              - 'commands/**'
+              - 'plugin.json'
+              - 'AGENTS.md'
+              - 'CLAUDE.md'
+              - 'reference/**'
+            docs:
+              - 'docs/**'
+            tests:
+              - 'tests/**'
+              - 'Makefile'
+            workflows:
+              - '.github/workflows/**'
+
+  # ---------------------------------------------------------------------------
+  # Always run: package structure + unit tests (fast, <30s)
+  # ---------------------------------------------------------------------------
+  validate:
+    runs-on: ubuntu-latest
+    needs: changes
     steps:
       - uses: actions/checkout@v4
 
@@ -22,12 +58,17 @@ jobs:
       - name: L0 — Package structure
         run: |
           python3 -c "
-          import json
+          import json, sys
           d = json.load(open('plugin.json'))
-          assert d.get('name'), 'missing name'
-          assert d.get('agents'), 'missing agents'
-          assert d.get('skills'), 'missing skills'
-          print('plugin.json: valid')
+          errors = []
+          if not d.get('name'): errors.append('missing name')
+          if not d.get('agents'): errors.append('missing agents')
+          if not d.get('skills'): errors.append('missing skills')
+          if not d.get('version'): errors.append('missing version')
+          if errors:
+              print(f'plugin.json FAILED: {errors}')
+              sys.exit(1)
+          print(f'plugin.json: valid (v{d[\"version\"]})')
           "
 
       - name: L1 — Structure validation
@@ -35,6 +76,7 @@ jobs:
 
       - name: L2 — Trigger eval dry-run
         run: |
+          failed=0
           for evalfile in tests/evals/triggers/*.json; do
             skill=$(basename "$evalfile" .json)
             skill_path=""
@@ -42,11 +84,65 @@ jobs:
             elif [ -f "agents/$skill.md" ]; then skill_path="agents/$skill.md"; fi
             if [ -n "$skill_path" ]; then
               printf "  %-25s " "$skill"
-              uv run tests/scripts/run_trigger_eval.py \
+              result=$(uv run tests/scripts/run_trigger_eval.py \
                 --eval-set "$evalfile" --skill-path "$skill_path" \
-                --dry-run 2>&1 | grep -o '[0-9]* positive.*' || echo "error"
+                --dry-run 2>&1)
+              echo "$result" | grep -o '[0-9]* positive.*' || { echo "error"; failed=1; }
             fi
           done
+          exit $failed
 
       - name: Pytest
         run: uv run --with pytest --with rich pytest tests/unit/ -v --tb=short
+
+  # ---------------------------------------------------------------------------
+  # On PR: verify docs build (only if docs changed)
+  # ---------------------------------------------------------------------------
+  docs-build:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs == 'true' || needs.changes.outputs.workflows == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        working-directory: docs
+        run: npm ci
+
+      - name: Build docs
+        working-directory: docs
+        run: npm run build
+
+  # ---------------------------------------------------------------------------
+  # On PR: version check (plugin.json version must change for skill changes)
+  # ---------------------------------------------------------------------------
+  version-check:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: github.event_name == 'pull_request' && needs.changes.outputs.skills == 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check version bump
+        run: |
+          # Get the version from this PR
+          PR_VERSION=$(python3 -c "import json; print(json.load(open('plugin.json'))['version'])")
+
+          # Get the version from main
+          git fetch origin main
+          MAIN_VERSION=$(git show origin/main:plugin.json | python3 -c "import json,sys; print(json.load(sys.stdin)['version'])")
+
+          echo "PR version:   $PR_VERSION"
+          echo "Main version: $MAIN_VERSION"
+
+          if [ "$PR_VERSION" = "$MAIN_VERSION" ]; then
+            echo "::warning::Skill/agent changes detected but plugin.json version unchanged ($MAIN_VERSION). Consider bumping the version."
+          else
+            echo "Version bumped: $MAIN_VERSION → $PR_VERSION"
+          fi

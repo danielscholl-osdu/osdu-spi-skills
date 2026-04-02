@@ -7,14 +7,119 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
-  release:
+  # ---------------------------------------------------------------------------
+  # Validate the release is clean
+  # ---------------------------------------------------------------------------
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
+
+      - name: Install Python
+        run: uv python install 3.11
+
+      - name: Verify tag matches plugin.json version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG_VERSION=$(python3 -c "import json; print(json.load(open('plugin.json'))['version'])")
+          echo "Tag version:        $TAG"
+          echo "plugin.json version: $PKG_VERSION"
+          if [ "$TAG" != "$PKG_VERSION" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match plugin.json version $PKG_VERSION"
+            exit 1
+          fi
+
+      - name: Run tests
+        run: |
+          uv run tests/scripts/validate.py
+          uv run --with pytest --with rich pytest tests/unit/ -v --tb=short
+
+  # ---------------------------------------------------------------------------
+  # Create GitHub Release with auto-generated notes
+  # ---------------------------------------------------------------------------
+  release:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate release summary
+        id: summary
+        run: |
+          AGENTS=$(ls agents/*.md | wc -l | tr -d ' ')
+          SKILLS=$(ls -d skills/*/ | grep -v osdu-shared | wc -l | tr -d ' ')
+          COMMANDS=$(ls commands/*.md | wc -l | tr -d ' ')
+          EVALS=$(ls tests/evals/triggers/*.json | wc -l | tr -d ' ')
+
+          cat << EOF > release-body.md
+          ## Install
+
+          \`\`\`bash
+          apm install danielscholl-osdu/osdu-spi-skills#${GITHUB_REF_NAME}
+          \`\`\`
+
+          ## What's Included
+
+          | Component | Count |
+          |-----------|-------|
+          | Agents | $AGENTS |
+          | Skills | $SKILLS |
+          | Commands | $COMMANDS |
+          | Trigger Evals | $EVALS |
+
+          ## Platforms
+
+          Deploys to Copilot, Claude Code, Cursor, OpenCode, and Codex via APM.
+
+          ---
+          EOF
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          body_path: release-body.md
           generate_release_notes: true
+          append_body: true
+
+  # ---------------------------------------------------------------------------
+  # Deploy docs on release (always have current docs for tagged version)
+  # ---------------------------------------------------------------------------
+  docs:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install and build docs
+        working-directory: docs
+        run: npm ci && npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/dist
+
+  deploy-docs:
+    needs: docs
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
