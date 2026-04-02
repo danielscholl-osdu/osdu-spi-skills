@@ -1,0 +1,54 @@
+---
+title: OSDU SPI Skills
+description: Unified AI agent skills for the OSDU platform
+template: splash
+hero:
+  tagline: Agents, Skills, and Tools for the OSDU / SPI ecosystem — one package, every AI tool.
+  actions:
+    - text: Get Started
+      link: /osdu-spi-skills/getting-started/introduction/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/danielscholl-osdu/osdu-spi-skills
+      icon: external
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## What is this?
+
+A unified package of AI agents and skills for the **OSDU** (Open Subsurface Data Universe) platform ecosystem. One `apm install` gives your AI coding assistant deep knowledge of OSDU infrastructure, platform services, and development workflows.
+
+<CardGrid stagger>
+  <Card title="8 Specialist Agents" icon="puzzle">
+    Platform orchestrator, infrastructure specialists (CIMPL and SPI), QA sub-agents for test execution, failure analysis, environment comparison, and reporting.
+  </Card>
+  <Card title="28 Skills" icon="open-book">
+    From cloning repos to scanning dependencies, running QA tests, reviewing merge requests, managing knowledge vaults, and shipping changes — the full developer lifecycle.
+  </Card>
+  <Card title="Every AI Tool" icon="laptop">
+    Deploys to GitHub Copilot, Claude Code, Cursor, OpenCode, and Codex from a single source via APM (Agent Package Manager).
+  </Card>
+  <Card title="Cross-Platform Testing" icon="approve-check-circle">
+    Six-layer test framework validates structure, trigger accuracy, multi-turn workflows, and skill value — across both Copilot and Claude.
+  </Card>
+</CardGrid>
+
+## Who is it for?
+
+**Platform Engineers** working with CIMPL or SPI infrastructure — Terraform, Helm, AKS, Azure PaaS services, environment provisioning, and deployment debugging.
+
+**Service Developers** contributing to OSDU platform services — building, testing, scanning dependencies, reviewing MRs, and shipping changes across 30+ GitLab repositories.
+
+## Quick Start
+
+```bash
+# Install APM
+curl -sSL https://aka.ms/apm-unix | sh
+
+# Add to any project
+apm install danielscholl-osdu/osdu-spi-skills
+
+# Done — your AI tool is now OSDU-aware
+```

@@ -20,8 +20,10 @@ Thumbs.db
 tests/benchmarks/*.json
 tests/benchmarks/*.md
 
-# Node (extensions)
+# Node
 node_modules/
+docs/node_modules/
+docs/dist/
 extensions/*/node_modules/
 
 # QA
