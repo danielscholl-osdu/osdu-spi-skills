@@ -1,0 +1,13 @@
+OSDU SPI Skills
+Copyright 2026, Daniel Scholl
+
+This product is licensed under the Apache License, Version 2.0.
+
+This product includes software developed for use with the OSDU (Open
+Subsurface Data Universe) platform ecosystem, including Community
+Implementation (CIMPL) and Service Provider Interface (SPI) infrastructure
+on Azure.
+
+This product includes AI agent skills, instructions, and tools designed
+for use with GitHub Copilot, Claude Code, Cursor, OpenCode, and Codex
+via the Agent Package Manager (APM).
