@@ -304,7 +304,7 @@ def validate_agents_md(root: Path) -> ValidationResult:
     if content is None:
         return result
     if len(content.strip()) < 100:
-        result.warn("AGENTS.md is very short — should contain identity + routing")
+        result.warn("AGENTS.md is very short — should contain project context")
 
     return result
 
@@ -483,12 +483,12 @@ def validate_cross_references(root: Path) -> ValidationResult:
         if routing_content is None:
             return result
 
-        # Check agents are mentioned in routing
+        # Check agents are mentioned in project context
         for name in agent_names:
             if name not in routing_content and f"@{name}" not in routing_content:
-                result.warn(f"Agent '{name}' not referenced in AGENTS.md routing")
+                result.warn(f"Agent '{name}' not referenced in AGENTS.md")
 
-        # Check shared skills are mentioned
+        # Check skills are mentioned in project context
         for name in skill_names:
             if name not in routing_content:
                 result.warn(f"Skill '{name}' not referenced in AGENTS.md")

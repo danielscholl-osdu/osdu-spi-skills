@@ -108,13 +108,63 @@ AI plugins are **probabilistic**. Quality degrades silently — a description ch
 
 ## Adding a New Skill
 
-1. Create `skills/<name>/SKILL.md` with frontmatter (`name`, `description`, `allowed-tools`)
+### Skill Directory Structure
+
+```
+skills/<name>/
+  SKILL.md              # Required — frontmatter + instructions
+  scripts/              # Optional — Python/shell scripts the skill executes
+  references/           # Optional — domain reference docs loaded on demand
+  tests/                # Optional — skill-specific unit tests
+```
+
+### SKILL.md Frontmatter
+
+```yaml
+---
+name: my-skill                    # Required — lowercase, hyphens, matches directory name
+description: >-                   # Required — under 500 chars
+  What this skill does and when to use it.
+  Use when the user says "trigger phrase 1", "trigger phrase 2".
+  Not for: what this skill should NOT be used for.
+allowed-tools: Bash, Read, Glob   # Claude Code only — tools the skill may use
+---
+```
+
+**Key conventions:**
+- `name` must match the directory name exactly
+- `description` must include "Use when..." trigger phrases and "Not for:" exclusions
+- Keep descriptions under 500 characters (may be truncated by hosts)
+- Only `name`, `description`, and `license` are recognized by Copilot CLI; `allowed-tools` is Claude Code-specific
+
+### Steps
+
+1. Create `skills/<name>/SKILL.md` with frontmatter and instructions
 2. Create `tests/evals/triggers/<name>.json` with 8+ positive and 5+ negative evals
 3. Optionally create `tests/evals/scenarios/<name>-workflow.json` for multi-turn tests
-4. Update `AGENTS.md` and `CLAUDE.md` routing tables
-5. Run `make test` — all green
-6. Run `make test-triggers CLI=copilot S=<name>` — verify accuracy
-7. Submit PR with conventional commit: `feat(skills): add <name>`
+4. Add the skill to the appropriate section in `AGENTS.md` (shared, specialist, or default-only)
+5. If the skill is specialist-scoped, add it to the owning agent's skill table in `CLAUDE.md`
+6. Run `make test` — all green
+7. Run `make test-triggers CLI=copilot S=<name>` — verify accuracy
+8. Submit PR with conventional commit: `feat(skills): add <name>`
+
+### Trigger Eval Format
+
+```json
+{
+  "positive": [
+    {"prompt": "run acceptance tests for partition", "expected_skill": "acceptance-test"},
+    ...
+  ],
+  "negative": [
+    {"prompt": "check test reliability for partition", "expected_skill": null},
+    ...
+  ]
+}
+```
+
+Positive cases (8+ minimum) should trigger your skill. Negative cases (5+ minimum) should
+NOT trigger it — use prompts that are similar but belong to other skills.
 
 ## Adding a New Agent
 
