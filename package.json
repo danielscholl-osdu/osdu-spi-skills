@@ -1,0 +1,41 @@
+{
+  "name": "osdu-spi-skills",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Unified AI agent skills for OSDU platform — deploys to Copilot, Claude, Cursor via APM",
+  "scripts": {
+    "test": "make test",
+    "test:apm": "make test-apm",
+    "test:lint": "make lint",
+    "test:unit": "make unit",
+    "test:pytest": "make pytest",
+    "test:triggers": "make test-triggers",
+    "test:triggers:copilot": "make test-triggers CLI=copilot",
+    "test:triggers:claude": "make test-triggers CLI=claude",
+    "test:sessions": "make test-sessions",
+    "test:sessions:copilot": "make test-sessions CLI=copilot",
+    "test:sessions:claude": "make test-sessions CLI=claude",
+    "test:all": "make test-all",
+    "test:skill": "make test-skill",
+    "deploy": "make deploy",
+    "report": "make report",
+    "doctor": "make doctor",
+    "docs:dev": "cd docs && npm run dev",
+    "docs:build": "cd docs && npm run build",
+    "docs:preview": "cd docs && npm run preview"
+  },
+  "keywords": [
+    "osdu",
+    "azure",
+    "apm",
+    "copilot",
+    "claude",
+    "ai-agents"
+  ],
+  "author": "Daniel Scholl",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danielscholl-osdu/osdu-spi-skills.git"
+  }
+}
