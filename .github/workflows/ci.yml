@@ -17,6 +17,7 @@ jobs:
       docs: ${{ steps.filter.outputs.docs }}
       tests: ${{ steps.filter.outputs.tests }}
       workflows: ${{ steps.filter.outputs.workflows }}
+      deps: ${{ steps.filter.outputs.deps }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -38,6 +39,13 @@ jobs:
               - 'Makefile'
             workflows:
               - '.github/workflows/**'
+              - '.github/dependabot.yml'
+            deps:
+              - 'package.json'
+              - 'package-lock.json'
+              - 'docs/package.json'
+              - 'docs/package-lock.json'
+              - 'pyproject.toml'
 
   # ---------------------------------------------------------------------------
   # Always run: package structure + unit tests (fast, <30s)
@@ -96,12 +104,15 @@ jobs:
         run: uv run --with pytest --with rich pytest tests/unit/ -v --tb=short
 
   # ---------------------------------------------------------------------------
-  # On PR: verify docs build (only if docs changed)
+  # Verify docs build (on docs changes OR dependency updates)
   # ---------------------------------------------------------------------------
   docs-build:
     runs-on: ubuntu-latest
     needs: changes
-    if: needs.changes.outputs.docs == 'true' || needs.changes.outputs.workflows == 'true'
+    if: >-
+      needs.changes.outputs.docs == 'true' ||
+      needs.changes.outputs.deps == 'true' ||
+      needs.changes.outputs.workflows == 'true'
     steps:
       - uses: actions/checkout@v4
 
@@ -117,6 +128,50 @@ jobs:
         working-directory: docs
         run: npm run build
 
+      - name: Verify llms.txt generated
+        run: |
+          for f in docs/dist/llms.txt docs/dist/llms-full.txt docs/dist/llms-small.txt; do
+            if [ -f "$f" ]; then
+              echo "  $f: $(wc -l < "$f") lines"
+            else
+              echo "::error::Missing $f"
+              exit 1
+            fi
+          done
+
+  # ---------------------------------------------------------------------------
+  # Verify THIRD-PARTY-NOTICES is current (on dependency updates)
+  # ---------------------------------------------------------------------------
+  notice-check:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.deps == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install docs dependencies
+        working-directory: docs
+        run: npm ci
+
+      - name: Regenerate THIRD-PARTY-NOTICES.txt
+        run: npm run notice
+
+      - name: Check for drift
+        run: |
+          if git diff --exit-code THIRD-PARTY-NOTICES.txt > /dev/null 2>&1; then
+            echo "THIRD-PARTY-NOTICES.txt is up to date"
+          else
+            echo "::warning::THIRD-PARTY-NOTICES.txt is outdated. Run 'npm run notice' and commit the result."
+            git diff --stat THIRD-PARTY-NOTICES.txt
+          fi
+
   # ---------------------------------------------------------------------------
   # On PR: version check (plugin.json version must change for skill changes)
   # ---------------------------------------------------------------------------
@@ -131,10 +186,7 @@ jobs:
 
       - name: Check version bump
         run: |
-          # Get the version from this PR
           PR_VERSION=$(python3 -c "import json; print(json.load(open('plugin.json'))['version'])")
-
-          # Get the version from main
           git fetch origin main
           MAIN_VERSION=$(git show origin/main:plugin.json | python3 -c "import json,sys; print(json.load(sys.stdin)['version'])")
 
