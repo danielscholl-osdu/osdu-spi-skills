@@ -21,8 +21,9 @@
 SCRIPTS := tests/scripts
 CLI ?= copilot
 DEBUG_FLAG := $(if $(DEBUG),--debug,)
+CLAUDE_FLAG := $(if $(filter claude,$(CLI)),--use-claude,)
 
-.PHONY: test test-apm lint unit pytest test-triggers test-sessions test-benchmark test-all report test-skill help doctor
+.PHONY: test test-apm lint unit pytest deploy test-triggers test-sessions test-benchmark test-all report test-skill help doctor
 
 help: ## Show this help
 	@echo "OSDU SPI Skills — Test Runner"
@@ -128,16 +129,33 @@ else
 endif
 
 # =============================================================================
+# Deploy: symlink source to platform directories for live testing
+# =============================================================================
+
+deploy:
+	@echo ""
+	@echo "=== Deploy: Creating platform directories ==="
+	@mkdir -p .github .claude
+	@# Symlink agents and skills for Copilot
+	@if [ ! -e .github/agents ]; then ln -sf ../agents .github/agents; echo "  .github/agents -> agents/"; fi
+	@if [ ! -e .github/skills ]; then ln -sf ../skills .github/skills; echo "  .github/skills -> skills/"; fi
+	@# Symlink agents, skills, commands for Claude
+	@if [ ! -e .claude/agents ]; then ln -sf ../agents .claude/agents; echo "  .claude/agents -> agents/"; fi
+	@if [ ! -e .claude/skills ]; then ln -sf ../skills .claude/skills; echo "  .claude/skills -> skills/"; fi
+	@if [ ! -e .claude/commands ]; then ln -sf ../commands .claude/commands; echo "  .claude/commands -> commands/"; fi
+	@echo "[deploy] Platform symlinks created"
+
+# =============================================================================
 # L3: Live trigger accuracy (requires AI)
 # =============================================================================
 
-test-triggers:
+test-triggers: deploy
 ifdef S
 	@echo "=== L3: Triggers — $(S) ($(CLI)) ==="
 	@uv run $(SCRIPTS)/run_trigger_eval.py \
 		--eval-set tests/evals/triggers/$(S).json \
 		--skill-path skills/$(S) \
-		--cli $(CLI) --verbose
+		$(CLAUDE_FLAG) --verbose
 else
 	@echo "=== L3: Triggers — all skills ($(CLI)) ==="
 	@for evalfile in $$(ls tests/evals/triggers/*.json 2>/dev/null); do \
@@ -149,7 +167,7 @@ else
 		if [ -n "$$skill_path" ]; then \
 			uv run $(SCRIPTS)/run_trigger_eval.py \
 				--eval-set $$evalfile --skill-path $$skill_path \
-				--cli $(CLI) 2>&1 | tail -1; \
+				$(CLAUDE_FLAG) 2>&1 | tail -1; \
 		else echo "skill not found"; fi; \
 	done
 endif
@@ -158,7 +176,7 @@ endif
 # L4: Session tests (multi-turn, requires AI + tmux)
 # =============================================================================
 
-test-sessions:
+test-sessions: deploy
 ifdef S
 	@echo "=== L4: Session — $(S) ($(CLI)) ==="
 	@uv run $(SCRIPTS)/session_test.py \

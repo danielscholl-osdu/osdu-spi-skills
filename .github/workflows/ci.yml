@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
+
+      - name: Install Python
+        run: uv python install 3.11
+
+      - name: L0 — Package structure
+        run: |
+          python3 -c "
+          import json
+          d = json.load(open('plugin.json'))
+          assert d.get('name'), 'missing name'
+          assert d.get('agents'), 'missing agents'
+          assert d.get('skills'), 'missing skills'
+          print('plugin.json: valid')
+          "
+
+      - name: L1 — Structure validation
+        run: uv run tests/scripts/validate.py
+
+      - name: L2 — Trigger eval dry-run
+        run: |
+          for evalfile in tests/evals/triggers/*.json; do
+            skill=$(basename "$evalfile" .json)
+            skill_path=""
+            if [ -d "skills/$skill" ]; then skill_path="skills/$skill"
+            elif [ -f "agents/$skill.md" ]; then skill_path="agents/$skill.md"; fi
+            if [ -n "$skill_path" ]; then
+              printf "  %-25s " "$skill"
+              uv run tests/scripts/run_trigger_eval.py \
+                --eval-set "$evalfile" --skill-path "$skill_path" \
+                --dry-run 2>&1 | grep -o '[0-9]* positive.*' || echo "error"
+            fi
+          done
+
+      - name: Pytest
+        run: uv run --with pytest --with rich pytest tests/unit/ -v --tb=short
