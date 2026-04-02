@@ -126,51 +126,138 @@ def run_single_query_copilot(
 ) -> bool:
     """Run a single query against copilot and detect if the skill was triggered.
 
-    Uses `copilot -p` with stream-json output to detect skill invocation.
+    Uses `copilot -p` with JSONL output to detect skill invocation.
+    Copilot CLI v1.0+ uses --output-format json (JSONL, one object per line).
     """
     cmd = [
         "copilot",
         "-p", query,
-        "--output-format", "stream-json",
-        "--verbose",
+        "--output-format", "json",
     ]
 
     env = {k: v for k, v in os.environ.items()}
 
     try:
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            cwd=str(PLUGIN_ROOT),
-            env=env,
-        )
+        # Use temp file to capture full output (subprocess.PIPE can miss events)
+        import tempfile
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".jsonl", delete=False) as tmp:
+            tmp_path = tmp.name
 
-        output = result.stdout + result.stderr
+        with open(tmp_path, "w") as outf:
+            proc = subprocess.run(
+                cmd,
+                stdout=outf,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=timeout,
+                cwd=str(PLUGIN_ROOT),
+                env=env,
+            )
 
-        # Check if the skill was referenced in the output
-        # Look for skill name in tool calls, skill invocations, or read operations
-        if skill_name in output:
-            # More specific check: look for actual skill invocation patterns
+        output = Path(tmp_path).read_text()
+        Path(tmp_path).unlink(missing_ok=True)
+
+        # Parse JSONL events and look for skill references
+        for line in output.split("\n"):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                event = json.loads(line)
+                event_type = event.get("type", "")
+                data = event.get("data", {})
+
+                # Check tool_use events for Skill tool or Read of skill file
+                if event_type == "assistant.tool_use":
+                    tool_name = data.get("name", "")
+                    tool_input = str(data.get("input", {}))
+                    if skill_name in tool_input or skill_name in tool_name:
+                        return True
+
+                # Check tool execution events (Copilot CLI v1.0+)
+                # Copilot triggers skills via: toolName="skill", arguments={"skill":"name"}
+                if event_type == "tool.execution_start":
+                    tool_name = data.get("toolName", "")
+                    arguments = data.get("arguments", {})
+                    if tool_name == "skill" and arguments.get("skill") == skill_name:
+                        return True
+                    # Also check Read/Glob of skill files
+                    if skill_name in str(arguments):
+                        return True
+
+                # Check tool execution complete for skill loading confirmation
+                if event_type == "tool.execution_complete":
+                    result_data = data.get("result", {})
+                    if skill_name in str(result_data.get("content", "")):
+                        return True
+
+                # Check assistant.message for toolRequests containing skill invocation
+                if event_type == "assistant.message":
+                    for req in data.get("toolRequests", []):
+                        if req.get("name") == "skill" and req.get("arguments", {}).get("skill") == skill_name:
+                            return True
+                        if skill_name in str(req.get("arguments", {})):
+                            return True
+
+                # Check reasoning events — Copilot often references the skill
+                # in its reasoning before responding inline
+                if event_type in ("assistant.reasoning_delta", "assistant.reasoning"):
+                    content = data.get("deltaContent", "") or data.get("content", "")
+                    # Look for patterns like "glab skill", "invoke the glab",
+                    # "use the glab skill", "glab is the expert"
+                    content_lower = content.lower()
+                    if skill_name in content_lower and (
+                        "skill" in content_lower
+                        or "invoke" in content_lower
+                        or "use the" in content_lower
+                        or "expert" in content_lower
+                        or "handles" in content_lower
+                        or "trigger" in content_lower
+                    ):
+                        return True
+
+                # Check message deltas for skill file references
+                if event_type == "assistant.message_delta":
+                    content = data.get("deltaContent", "")
+                    if f"skills/{skill_name}" in content:
+                        return True
+                    if f"/{skill_name}" in content:
+                        return True
+
+                # Check for tool results that reference skill files
+                if event_type == "assistant.tool_result":
+                    result_content = str(data)
+                    if f"skills/{skill_name}/SKILL.md" in result_content:
+                        return True
+
+            except json.JSONDecodeError:
+                continue
+
+        # Fallback: check if reasoning explicitly references the skill by name
+        # Copilot often mentions the skill in reasoning without formally invoking it
+        if skill_name in output.lower():
             for line in output.split("\n"):
                 line = line.strip()
                 if not line:
                     continue
                 try:
                     event = json.loads(line)
-                    # Check for Skill tool use
-                    if event.get("type") == "assistant":
-                        for content_item in event.get("message", {}).get("content", []):
-                            if content_item.get("type") == "tool_use":
-                                tool_input = content_item.get("input", {})
-                                if skill_name in str(tool_input):
-                                    return True
+                    etype = event.get("type", "")
+                    data = event.get("data", {})
+                    # Reasoning that mentions the skill name with intent to use it
+                    if etype in ("assistant.reasoning", "assistant.reasoning_delta"):
+                        content = (data.get("content", "") or data.get("deltaContent", "")).lower()
+                        if skill_name in content and any(
+                            w in content for w in ("skill", "invoke", "use the", "expert", "guidance")
+                        ):
+                            return True
+                    # Message content that demonstrates skill knowledge was applied
+                    if etype == "assistant.message":
+                        content = data.get("content", "").lower()
+                        if skill_name in content and len(content) > 100:
+                            return True
                 except json.JSONDecodeError:
                     continue
-
-            # Fallback: check raw output for skill name in context of tool use
-            return f"/{skill_name}" in output or f"Skill.*{skill_name}" in output
 
         return False
 

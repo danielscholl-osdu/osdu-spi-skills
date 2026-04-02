@@ -1,6 +1,14 @@
 # APM
 apm_modules/
 apm.lock.yaml
+apm.yml
+
+# Platform deploy symlinks (created by `make deploy`)
+.github/agents
+.github/skills
+.claude/agents
+.claude/skills
+.claude/commands
 
 # Python
 __pycache__/
