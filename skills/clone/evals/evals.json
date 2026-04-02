@@ -1,0 +1,44 @@
+{
+  "skill_name": "clone",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "clone the partition service",
+      "expected_output": "Repo cloned using the clone.py script. Directory structure: partition/.bare/ and partition/master/",
+      "files": [],
+      "expectations": [
+        "Did NOT delegate to an agent or sub-agent",
+        "Located and used the clone.py script via uv run",
+        "Resolved the correct GitLab URL for partition",
+        "Script detected wt/git-wt and chose appropriate clone method",
+        "Final layout has partition/.bare/ and partition/master/ (if worktree) or partition/ (if standard)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "clone common library",
+      "expected_output": "os-core-common cloned using the clone.py script.",
+      "files": [],
+      "expectations": [
+        "Did NOT delegate to an agent or sub-agent",
+        "Resolved 'common library' to os-core-common",
+        "Used the correct GitLab URL: community.opengroup.org/osdu/platform/system/lib/core/os-core-common",
+        "Located and used the clone.py script via uv run",
+        "Script handled worktree detection and clone automatically"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "clone category:core",
+      "expected_output": "All core services cloned using the clone.py script.",
+      "files": [],
+      "expectations": [
+        "Did NOT delegate to an agent or sub-agent",
+        "Resolved category:core to the full list of core services",
+        "Ran clone.py once per repo with the correct URL",
+        "Skipped repos that already exist in the workspace",
+        "Reported summary: cloned count, skipped, failures"
+      ]
+    }
+  ]
+}

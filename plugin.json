@@ -1,0 +1,34 @@
+{
+  "name": "osdu-spi-skills",
+  "description": "AI system for OSDU community implementation on Azure — agents, skills, extensions, and tools for infrastructure operations, platform analytics, and knowledge management.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Daniel Scholl"
+  },
+  "license": "Apache-2.0",
+  "repository": "https://github.com/danielscholl-osdu/osdu-spi-skills",
+  "keywords": [
+    "osdu",
+    "azure",
+    "aks",
+    "terraform",
+    "infrastructure",
+    "platform-operations",
+    "spi",
+    "cimpl"
+  ],
+  "category": "infrastructure",
+  "agents": "agents/",
+  "skills": "skills/",
+  "commands": "commands/",
+  "mcpServers": {
+    "osdu-mcp-server": {
+      "command": "uvx",
+      "args": ["osdu-mcp-server"],
+      "env": {
+        "OSDU_MCP_SERVER_URL": "",
+        "OSDU_MCP_SERVER_DATA_PARTITION": ""
+      }
+    }
+  }
+}

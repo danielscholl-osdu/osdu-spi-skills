@@ -1,0 +1,77 @@
+{
+  "skill_name": "loop",
+  "evals": [
+    {
+      "query": "loop every 10 minutes — check the pipeline status for partition",
+      "should_trigger": true
+    },
+    {
+      "query": "watch the MR pipeline and let me know when it finishes",
+      "should_trigger": true
+    },
+    {
+      "query": "repeat the health check every 5 minutes until I say stop",
+      "should_trigger": true
+    },
+    {
+      "query": "every 15 minutes check if there are new open MRs across OSDU",
+      "should_trigger": true
+    },
+    {
+      "query": "set up a recurring check on the cimpl/lab environment health",
+      "should_trigger": true
+    },
+    {
+      "query": "loop 5m check if the build has finished",
+      "should_trigger": true
+    },
+    {
+      "query": "periodically check the smoke test results — every 10 minutes",
+      "should_trigger": true
+    },
+    {
+      "query": "keep polling the pipeline until it goes green",
+      "should_trigger": true
+    },
+    {
+      "query": "what pipelines are failing across OSDU services right now?",
+      "should_trigger": false,
+      "note": "One-time pipeline check → osdu-activity"
+    },
+    {
+      "query": "run the smoke tests on cimpl/lab",
+      "should_trigger": false,
+      "note": "One-time test run → osdu-qa"
+    },
+    {
+      "query": "report on my environment health",
+      "should_trigger": false,
+      "note": "One-time health check → health"
+    },
+    {
+      "query": "good morning — daily briefing please",
+      "should_trigger": false,
+      "note": "One-time briefing → briefing"
+    },
+    {
+      "query": "ship my changes and create the merge request",
+      "should_trigger": false,
+      "note": "Ship workflow → send"
+    },
+    {
+      "query": "clone the partition service repo",
+      "should_trigger": false,
+      "note": "Repo clone → clone"
+    },
+    {
+      "query": "check deps for partition",
+      "should_trigger": false,
+      "note": "Dependency analysis → dependency-scan"
+    },
+    {
+      "query": "remember this — we decided to use spring-boot 3.2",
+      "should_trigger": false,
+      "note": "Vault write → brain"
+    }
+  ]
+}

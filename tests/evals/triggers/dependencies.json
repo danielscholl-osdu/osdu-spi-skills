@@ -1,0 +1,77 @@
+{
+  "skill_name": "dependencies",
+  "evals": [
+    {
+      "query": "analyze the dependency versions for partition service and check for updates",
+      "should_trigger": true
+    },
+    {
+      "query": "what version of spring-core is the latest available on Maven Central?",
+      "should_trigger": true
+    },
+    {
+      "query": "scan this project for vulnerability data using Trivy and show the results",
+      "should_trigger": true
+    },
+    {
+      "query": "parse the pom.xml and check which dependencies have newer versions available",
+      "should_trigger": true
+    },
+    {
+      "query": "run a compact vulnerability scan on the storage service project",
+      "should_trigger": true
+    },
+    {
+      "query": "batch check these Maven dependencies for available updates",
+      "should_trigger": true
+    },
+    {
+      "query": "list all available versions for jackson-databind from Maven Central",
+      "should_trigger": true
+    },
+    {
+      "query": "analyze the POM file and check versions for all dependencies",
+      "should_trigger": true
+    },
+    {
+      "query": "run the smoke tests on cimpl/lab and show results",
+      "should_trigger": false,
+      "note": "Test execution → osdu-qa"
+    },
+    {
+      "query": "add a readiness probe to the helm chart for AKS safeguards",
+      "should_trigger": false,
+      "note": "Infrastructure → iac"
+    },
+    {
+      "query": "what merge requests are open across OSDU services?",
+      "should_trigger": false,
+      "note": "MR status → osdu-activity"
+    },
+    {
+      "query": "ship my changes and create the merge request",
+      "should_trigger": false,
+      "note": "Ship workflow → send"
+    },
+    {
+      "query": "how reliable are the search API tests?",
+      "should_trigger": false,
+      "note": "Test reliability → osdu-quality"
+    },
+    {
+      "query": "report on my environment health — are all nodes ready?",
+      "should_trigger": false,
+      "note": "Environment health → health"
+    },
+    {
+      "query": "who are the top contributors to OSDU this quarter?",
+      "should_trigger": false,
+      "note": "Contributors → osdu-engagement"
+    },
+    {
+      "query": "fix the FOSSA NOTICE file from the failed pipeline",
+      "should_trigger": false,
+      "note": "FOSSA fix → fossa"
+    }
+  ]
+}

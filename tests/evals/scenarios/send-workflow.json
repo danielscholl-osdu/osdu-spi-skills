@@ -1,0 +1,72 @@
+{
+  "name": "send-workflow",
+  "description": "Test send skill — understands the review-commit-push workflow, worktrunk patterns, and platform detection",
+  "ready_pattern": "❯|\\$|>|claude",
+  "steps": [
+    {
+      "name": "workflow-knowledge",
+      "prompt": "what is the review-commit-push workflow for getting my changes into a merge request?",
+      "timeout": 180,
+      "pause_after": 3,
+      "assertions": [
+        {
+          "pattern": "review|commit|push|merge request|MR|pull request|PR",
+          "type": "regex",
+          "description": "Describes the review-commit-push-MR/PR workflow"
+        }
+      ]
+    },
+    {
+      "name": "worktrunk-awareness",
+      "prompt": "how does the commit step work? what tool handles commit messages?",
+      "timeout": 180,
+      "pause_after": 3,
+      "assertions": [
+        {
+          "pattern": "wt|worktrunk|wt step commit",
+          "type": "regex",
+          "description": "Knows about worktrunk for commits"
+        }
+      ]
+    },
+    {
+      "name": "branch-safety",
+      "prompt": "what happens if I try to send while on the dev branch?",
+      "timeout": 180,
+      "pause_after": 3,
+      "assertions": [
+        {
+          "pattern": "feature|worktree|wt switch|cannot|shouldn't|create.*branch|switch",
+          "type": "regex",
+          "description": "Knows dev branch is not for direct MRs"
+        }
+      ]
+    },
+    {
+      "name": "platform-awareness",
+      "prompt": "if I'm working on a GitHub repo instead of GitLab, does the send workflow still work?",
+      "timeout": 180,
+      "pause_after": 3,
+      "assertions": [
+        {
+          "pattern": "github|gh pr|detect|remote|platform",
+          "type": "regex",
+          "description": "Knows the skill auto-detects GitHub vs GitLab"
+        }
+      ]
+    },
+    {
+      "name": "boundary-test",
+      "prompt": "what pipelines are failing across OSDU right now?",
+      "timeout": 180,
+      "pause_after": 3,
+      "assertions": [
+        {
+          "pattern": "osdu-activity|pipeline|CI|status|failing",
+          "type": "regex",
+          "description": "Routes to pipeline domain (not send)"
+        }
+      ]
+    }
+  ]
+}
