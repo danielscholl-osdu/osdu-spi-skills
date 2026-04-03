@@ -13,23 +13,14 @@ Built for OSDU maintainers, platform engineers, QA contributors, and community o
 
 ## Install
 
-Pick your platform:
-
-```bash
-# Claude Code
-claude plugin add danielscholl-osdu/osdu-spi-skills
-
-# GitHub Copilot
-gh copilot plugin install danielscholl-osdu/osdu-spi-skills
-
-# Any platform via APM
-curl -sSL https://aka.ms/apm-unix | sh
-apm install danielscholl-osdu/osdu-spi-skills
-
-# CI/CD (Copilot coding agent)
-# Copy examples/apm.yml + examples/copilot-setup-steps.yml to your repo
-# See examples/README.md for details
 ```
+/plugin marketplace add danielscholl-osdu/osdu-spi-skills
+/plugin install osdu-spi-skills
+```
+
+Works in Claude Code, GitHub Copilot, Cursor, and any CLI that supports the `/plugin` marketplace.
+
+For CI/CD (Copilot coding agent), see [`examples/`](examples/).
 
 ## Use
 
