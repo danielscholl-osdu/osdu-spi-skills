@@ -65,19 +65,6 @@ You ──→ 28 skills (shared procedures — any agent can use)
 
 You talk naturally. The system routes to the right skill or specialist agent based on intent. Simple queries (pipeline status, MR lists, shipping changes) are handled directly. Complex operations (builds, test runs, infrastructure changes) are delegated to a specialist.
 
-## Platforms
-
-Deploys from a single `plugin.json` via [APM](https://github.com/microsoft/apm):
-
-| Platform | Agents | Skills | Commands | MCP |
-|----------|--------|--------|----------|-----|
-| GitHub Copilot | `.github/agents/` | `.github/skills/` | `.github/prompts/` | `.vscode/mcp.json` |
-| Claude Code | `.claude/agents/` | `.claude/skills/` | `.claude/commands/` | auto-configured |
-| Cursor | `.cursor/agents/` | `.cursor/skills/` | — | `.cursor/mcp.json` |
-| OpenCode | `.opencode/agents/` | `.opencode/skills/` | `.opencode/commands/` | `opencode.json` |
-| Codex | `.codex/agents/` | `.agents/skills/` | — | — |
-| CI/CD | via `apm install` | via `apm install` | — | — |
-
 ## Testing
 
 Six-layer test framework:
