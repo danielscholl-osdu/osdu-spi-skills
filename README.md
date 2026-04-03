@@ -15,7 +15,7 @@ Built for OSDU maintainers, platform engineers, QA contributors, and community o
 
 ```
 /plugin marketplace add danielscholl-osdu/osdu-spi-skills
-/plugin install osdu-spi-skills
+/plugin install osdu@osdu-spi-skills
 ```
 
 Works in Claude Code, GitHub Copilot, Cursor, and any CLI that supports the `/plugin` marketplace.
@@ -48,7 +48,7 @@ For CI/CD (Copilot coding agent), see [`examples/`](examples/).
 | Infrastructure | iac, health, forks, status, setup |
 | Automation | loop |
 
-**Agents:** osdu (orchestrator), cimpl (infrastructure), spi (fork management), build-runner, qa-runner, qa-analyzer, qa-comparator, qa-reporter
+**Agents:** osdu (platform), cimpl (infrastructure), spi (fork management), build-runner, qa-runner, qa-analyzer, qa-comparator, qa-reporter
 
 **Commands:** /clone, /prime, /qa, /ship
 
@@ -57,13 +57,13 @@ For CI/CD (Copilot coding agent), see [`examples/`](examples/).
 ## Architecture
 
 ```
-You ──→ Default Context (observe, plan, ship)
-            ├──→ @osdu   (platform: builds, tests, dependencies)
-            ├──→ @cimpl  (CIMPL: Terraform, Helm, AKS)
-            └──→ @spi    (SPI: Azure PaaS, fork management)
+You ──→ 28 skills (shared procedures — any agent can use)
+   ├──→ @osdu    (platform: builds, tests, dependencies, QA)
+   ├──→ @cimpl   (infrastructure: Terraform, Helm, AKS)
+   └──→ @spi     (SPI: Azure PaaS, fork management)
 ```
 
-The default context handles planning, briefings, and shipping. Specialist agents handle complex operations in their domain. Skills are shared procedures that both contexts can use.
+You talk naturally. The system routes to the right skill or specialist agent based on intent. Simple queries (pipeline status, MR lists, shipping changes) are handled directly. Complex operations (builds, test runs, infrastructure changes) are delegated to a specialist.
 
 ## Platforms
 
