@@ -5,42 +5,63 @@
 [![Status: Experimental](https://img.shields.io/badge/status-experimental-orange)](#)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-green)](LICENSE)
 
-Unified AI agent skills for the OSDU / SPI ecosystem. One package, every AI tool.
+### An agentic skill system for OSDU — one package, every AI tool
+
+A plugin marketplace package that bundles specialized agents, skills, and live platform access for infrastructure automation, platform analytics, QA testing, and knowledge management across OSDU environments on Azure.
+
+Built for OSDU maintainers, platform engineers, QA contributors, and community operators.
 
 ## Install
 
-```bash
-# Install APM (if you haven't already)
-curl -sSL https://aka.ms/apm-unix | sh
+Pick your platform:
 
-# Add to any project
+```bash
+# Claude Code
+claude plugin add danielscholl-osdu/osdu-spi-skills
+
+# GitHub Copilot
+gh copilot plugin install danielscholl-osdu/osdu-spi-skills
+
+# Any platform via APM
+curl -sSL https://aka.ms/apm-unix | sh
 apm install danielscholl-osdu/osdu-spi-skills
+
+# CI/CD (Copilot coding agent)
+# Copy examples/apm.yml + examples/copilot-setup-steps.yml to your repo
+# See examples/README.md for details
 ```
 
-Your AI coding assistant is now OSDU-aware — across Copilot, Claude Code, Cursor, OpenCode, and Codex.
+## Use
 
-## Try It
-
-| What you say | What happens |
-|---|---|
-| "good morning" | Daily briefing from knowledge vault |
-| "clone partition" | Clone OSDU repo with worktree layout |
-| "build storage" | Maven build with structured output |
-| "check deps for legal" | Dependency scan with CVE overlay |
-| "run smoke tests" | OSDU API test execution |
-| "review MR 320" | Code analysis + pipeline diagnostics |
-| "ship it" | Review, commit, push, create MR |
-| "environment health" | Cluster + PaaS + OSDU health report |
-| "sync upstream for partition" | SPI fork management |
+```
+> good morning                          → daily briefing from knowledge vault
+> clone partition                       → clone OSDU repo with worktree layout
+> build storage                         → Maven build with structured output
+> check deps for legal                  → dependency scan with CVE overlay
+> run smoke tests                       → OSDU API test execution
+> review MR 320                         → code analysis + pipeline diagnostics
+> ship it                               → review, commit, push, create MR
+> environment health                    → cluster + PaaS + OSDU health report
+> sync upstream for partition           → SPI fork management
+```
 
 ## What's Inside
 
-| Component | Count |
-|-----------|-------|
-| Agents | 8 — osdu, cimpl, spi, build-runner, qa-runner, qa-analyzer, qa-comparator, qa-reporter |
-| Skills | 28 — brain, glab, maven, osdu-qa, iac, forks, send, health, and 20 more |
-| Commands | 4 — /clone, /prime, /qa, /ship |
-| MCP Server | 1 — osdu-mcp-server (live platform data) |
+| Category | Skills |
+|----------|--------|
+| Knowledge | brain, briefing, learn, consolidate |
+| Analytics | osdu-activity, osdu-engagement, osdu-quality |
+| Build & Deps | maven, dependencies, dependency-scan, build-runner, remediate |
+| QA Testing | osdu-qa, acceptance-test |
+| Git Workflow | send, mr-review, contribute, glab, fossa, maintainer, clone |
+| Infrastructure | iac, health, forks, status, setup |
+| Automation | loop |
+
+**Agents:** osdu (orchestrator), cimpl (infrastructure), spi (fork management), build-runner, qa-runner, qa-analyzer, qa-comparator, qa-reporter
+
+**Commands:** /clone, /prime, /qa, /ship
+
+**MCP Server:** [osdu-mcp-server](https://pypi.org/project/osdu-mcp-server/) — live platform access (search, storage, schema, entitlements, legal, partition)
 
 ## Architecture
 
@@ -59,20 +80,12 @@ Deploys from a single `plugin.json` via [APM](https://github.com/microsoft/apm):
 
 | Platform | Agents | Skills | Commands | MCP |
 |----------|--------|--------|----------|-----|
-| GitHub Copilot | `.github/agents/*.agent.md` | `.github/skills/` | `.github/prompts/*.prompt.md` | `.vscode/mcp.json` |
-| Claude Code | `.claude/agents/*.md` | `.claude/skills/` | `.claude/commands/` | auto-configured |
-| Cursor | `.cursor/agents/*.md` | `.cursor/skills/` | — | `.cursor/mcp.json` |
-| OpenCode | `.opencode/agents/*.md` | `.opencode/skills/` | `.opencode/commands/` | `opencode.json` |
+| GitHub Copilot | `.github/agents/` | `.github/skills/` | `.github/prompts/` | `.vscode/mcp.json` |
+| Claude Code | `.claude/agents/` | `.claude/skills/` | `.claude/commands/` | auto-configured |
+| Cursor | `.cursor/agents/` | `.cursor/skills/` | — | `.cursor/mcp.json` |
+| OpenCode | `.opencode/agents/` | `.opencode/skills/` | `.opencode/commands/` | `opencode.json` |
 | Codex | `.codex/agents/` | `.agents/skills/` | — | — |
-
-## CI/CD
-
-Use OSDU skills with the GitHub Copilot coding agent or other CI/CD AI agents. See [`examples/`](examples/) for ready-to-copy setup files.
-
-```bash
-# In your consumer repo: add apm.yml, then
-apm install
-```
+| CI/CD | via `apm install` | via `apm install` | — | — |
 
 ## Testing
 
