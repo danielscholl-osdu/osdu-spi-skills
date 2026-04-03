@@ -65,6 +65,15 @@ Deploys from a single `plugin.json` via [APM](https://github.com/microsoft/apm):
 | OpenCode | `.opencode/agents/*.md` | `.opencode/skills/` | `.opencode/commands/` | `opencode.json` |
 | Codex | `.codex/agents/` | `.agents/skills/` | — | — |
 
+## CI/CD
+
+Use OSDU skills with the GitHub Copilot coding agent or other CI/CD AI agents. See [`examples/`](examples/) for ready-to-copy setup files.
+
+```bash
+# In your consumer repo: add apm.yml, then
+apm install
+```
+
 ## Testing
 
 Six-layer test framework:

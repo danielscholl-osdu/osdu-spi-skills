@@ -50,6 +50,16 @@ Commands are deployed as Copilot prompts:
 - `qa.prompt.md` — Run QA tests
 - `ship.prompt.md` — Ship changes
 
+## CI/CD (Copilot Coding Agent)
+
+To use OSDU skills with the Copilot coding agent in GitHub Actions:
+
+1. Copy `examples/apm.yml` to your repo root
+2. Copy `examples/copilot-setup-steps.yml` to `.github/workflows/copilot-setup-steps.yml`
+3. Commit and push
+
+The setup workflow runs `apm install` before the coding agent starts, making all skills available. See [`examples/README.md`](https://github.com/danielscholl-osdu/osdu-spi-skills/tree/main/examples) for details and alternative approaches.
+
 ## Key Differences from Claude
 
 | Feature | Copilot | Claude |
@@ -59,3 +69,4 @@ Commands are deployed as Copilot prompts:
 | Tool restrictions | Not supported | `allowed-tools` frontmatter |
 | Sub-agent spawn | `task` tool | `Agent` tool with `subagent_type` |
 | MCP config | `.vscode/mcp.json` | Plugin-level `.mcp.json` |
+| Discovery | `AGENTS.md` + `CLAUDE.md` | `CLAUDE.md` (references `AGENTS.md`) |

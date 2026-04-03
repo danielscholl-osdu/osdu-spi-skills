@@ -1,5 +1,7 @@
 # OSDU SPI Skills
 
+> For the full skill catalog, routing, and rules, see [AGENTS.md](AGENTS.md).
+
 ## Core Principles
 
 ### Primary Objective
@@ -53,31 +55,6 @@ Default ──→ @osdu   (platform operations)
        ├──→ @cimpl  (cimpl infrastructure)
        └──→ @spi    (spi infrastructure)
 ```
-
-## Skills
-
-### Shared Skills (execute directly in current context — do NOT delegate)
-
-brain, briefing, learn, consolidate, glab, send, mr-review, contribute, clone, setup,
-osdu-activity, osdu-engagement, osdu-quality, osdu-data-load
-
-### Specialist Skills (loaded by owning agent)
-
-| Skill | Owner | Domain |
-|-------|-------|--------|
-| iac | @cimpl, @spi | Terraform, AVM, Helm, AKS safeguards, Azure PaaS |
-| health | @cimpl, @spi | Environment health, cluster and PaaS resources |
-| maven | @osdu | Java builds and dependency management |
-| dependencies | @osdu | Dependency analysis and risk scoring |
-| build-runner | @osdu | Build execution with structured output |
-| acceptance-test | @osdu | Java acceptance/integration tests against live environments |
-| osdu-qa | @osdu | QA test execution, environments, and reporting |
-| forks | @spi | Three-branch fork lifecycle, upstream sync |
-| status | @spi | Cross-repo dashboard |
-
-### Default-Only Skills
-
-loop, clone, dependency-scan, remediate, fossa, maintainer
 
 ## Conventions
 

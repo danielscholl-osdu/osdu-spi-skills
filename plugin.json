@@ -21,6 +21,7 @@
   "agents": "agents/",
   "skills": "skills/",
   "commands": "commands/",
+  "prompts": "commands/",
   "mcpServers": {
     "osdu-mcp-server": {
       "command": "uvx",

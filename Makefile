@@ -135,11 +135,12 @@ endif
 deploy:
 	@echo ""
 	@echo "=== Deploy: Creating platform directories ==="
+	@echo "  (Local equivalent of 'apm install' — symlinks source to platform dirs)"
 	@mkdir -p .github .claude
-	@# Symlink agents and skills for Copilot
+	@# Copilot: agents + skills in .github/
 	@if [ ! -e .github/agents ]; then ln -sf ../agents .github/agents; echo "  .github/agents -> agents/"; fi
 	@if [ ! -e .github/skills ]; then ln -sf ../skills .github/skills; echo "  .github/skills -> skills/"; fi
-	@# Symlink agents, skills, commands for Claude
+	@# Claude Code: agents + skills + commands in .claude/
 	@if [ ! -e .claude/agents ]; then ln -sf ../agents .claude/agents; echo "  .claude/agents -> agents/"; fi
 	@if [ ! -e .claude/skills ]; then ln -sf ../skills .claude/skills; echo "  .claude/skills -> skills/"; fi
 	@if [ ! -e .claude/commands ]; then ln -sf ../commands .claude/commands; echo "  .claude/commands -> commands/"; fi

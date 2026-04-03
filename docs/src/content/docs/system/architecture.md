@@ -9,6 +9,15 @@ You talk to **one assistant**. It observes, plans, and ships. When you need to o
 
 The default context knows *why* — goals, priorities, decisions. Specialists know *how* — deep domain execution.
 
+## Discovery Model
+
+Two files control how AI platforms discover skills:
+
+- **`AGENTS.md`** — Universal skill catalog with paths, routing, and rules. Read by Copilot, Codex, and any platform that supports AGENTS.md.
+- **`CLAUDE.md`** — Claude-specific overlay (delegation model, conventions). References AGENTS.md for the shared catalog.
+
+Copilot reads both files. Claude reads only CLAUDE.md. Codex reads AGENTS.md. The skill content itself (`skills/*/SKILL.md`) is platform-agnostic.
+
 ## Delegation Model
 
 ```
